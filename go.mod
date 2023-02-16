@@ -1,3 +1,3 @@
-module asd/meplatin
+module home-heating
 
 go 1.20
