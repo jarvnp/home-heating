@@ -4,17 +4,17 @@ import(
   "fmt"
   "net/http"
   "time"
-  "home-heating/electricityprice"
-  "home-heating/shelly"
-  "home-heating/temperature"
-
+  //"home-heating/electricityprice"
+  //"home-heating/shelly"
+  //"home-heating/temperature"
+  "home-heating/email"
 )
 
 func main() {
   client := http.Client{
     Timeout: 10 * time.Second,
   }
-
+/*
   resp1, err1:= temperature.GetTemperature(client);
   if(err1 == nil){
     fmt.Println(resp1);
@@ -22,7 +22,7 @@ func main() {
     fmt.Println("error: ",err1);
   }
 
-  err2:=shelly.SetSwitch(1,false, client);
+  err2:=shelly.SetSwitch(0,false, client);
   if(err2 != nil){
     fmt.Println(err2);
   }
@@ -34,5 +34,9 @@ func main() {
   }else{
 
     fmt.Println("error: ",err3);
-  }
+  }*/
+
+  text := "test\\ntest"
+  err4:=email.SendEmail([]string{"RECIPIENT_EMAIL", "RECIPIENT_EMAIL"},"TEST",text,client)
+  fmt.Println(err4)
 }
