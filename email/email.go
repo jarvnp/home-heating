@@ -6,7 +6,6 @@ import(
   "errors"
   "io/ioutil"
   "encoding/json"
-  "fmt"
 )
 
 const URL = "https://send.api.mailtrap.io/api/send"
@@ -22,26 +21,38 @@ type Response struct{
   Errors []string `json:errors`
 }
 
+type Recipient struct{
+  Email string  `json:"email"`
+}
+
+type Request struct{
+  From struct{
+    Email string  `json:"email"`
+    Name string `json:"name"`
+  }`json:"from"`
+
+  To []Recipient `json:"to"`
+
+  Subject string  `json:"subject"`
+  Text string `json:"text"`
+}
 
 func getMessageBody(recipients []string, subject string, message string)string{
-  body :=`{
-    "from":{"email":"%s","name":"%s"},
-    "to":[%s],
-    "subject":"%s",
-    "text":"%s"
-  }`
+  var body Request;
+  body.Subject = subject
+  body.Text = message
+  body.From.Email = FROM_EMAIL
+  body.From.Name = FROM_NAME
 
-  var recipientsStr string;
   for i:= range recipients{
-    if(i != 0){
-      recipientsStr += ","
-    }
-    recipientsStr += fmt.Sprintf("{\"email\":\"%s\"}", recipients[i])
+    var recipient Recipient;
+    recipient.Email = recipients[i]
+    body.To = append(body.To, recipient)
   }
 
-  body = fmt.Sprintf(body, FROM_EMAIL,FROM_NAME,recipientsStr,subject,message)
-  fmt.Println(body)
-  return body
+
+  bodyStr,_ := json.Marshal(&body)
+  return string(bodyStr)
 }
 
 

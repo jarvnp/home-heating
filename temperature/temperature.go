@@ -5,7 +5,6 @@ import(
   "net/http"
   "io/ioutil"
   "encoding/json"
-  "log"
   "errors"
 )
 
@@ -24,13 +23,6 @@ type TemperatureData struct{
 
 //return (temp,errorcode)
 func GetTemperature(client http.Client)(float64, error){
-  defer func() {
-		if err := recover(); err != nil {
-			log.Println("panic occurred:", err)
-		}
-	}()
-
-
   resp, err := client.Get(REQUEST)
   if err != nil {
     return 0,err;
