@@ -6,9 +6,10 @@ import(
   "encoding/xml"
   "errors"
   "time"
+  "home-heating/config"
 )
 
-const TOKEN = "PRICE_TOKEN"
+
 
 
 type PriceData struct{
@@ -21,7 +22,7 @@ type PriceData struct{
 
 func GetPrices(periodStart string, periodEnd string, client http.Client)([]float64, error){
   resp, err := client.Get(
-    "https://web-api.tp.entsoe.eu/api?securityToken="+TOKEN+"&documentType=A44&in_Domain=10YFI-1--------U&out_Domain=10YFI-1--------U&periodStart="+periodStart+"&periodEnd="+periodEnd)
+    "https://web-api.tp.entsoe.eu/api?securityToken="+config.PRICE_TOKEN+"&documentType=A44&in_Domain=10YFI-1--------U&out_Domain=10YFI-1--------U&periodStart="+periodStart+"&periodEnd="+periodEnd)
 
   if err != nil {
     return nil,err;

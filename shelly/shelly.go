@@ -4,6 +4,7 @@ import(
   "net/http"
   "strconv"
   "errors"
+  "home-heating/config"
 )
 
 
@@ -16,9 +17,9 @@ const SWITCH_MAX_ON_TIME = 3600*3;
 func SetSwitch(id uint8, value bool, client http.Client)error{
   var request string;
   if value == true{
-    request = "SHELLY_ADDRESS/rpc/Switch.Set?id="+strconv.Itoa(int(id))+"&on=true&toggle_after="+strconv.Itoa(int(SWITCH_MAX_ON_TIME))
+    request = config.SHELLY_ADDRESS+"/rpc/Switch.Set?id="+strconv.Itoa(int(id))+"&on=true&toggle_after="+strconv.Itoa(int(SWITCH_MAX_ON_TIME))
   }else{
-    request = "SHELLY_ADDRESS/rpc/Switch.Set?id=" +strconv.Itoa(int(id))+"&on=false"
+    request = config.SHELLY_ADDRESS+"/rpc/Switch.Set?id=" +strconv.Itoa(int(id))+"&on=false"
   }
 
   resp, err := client.Get(request)

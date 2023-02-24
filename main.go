@@ -18,9 +18,9 @@ func main() {
   var temp float64
   var prices []float64
 
-  /*if(!getDataAndReportError(&temp, &prices)){
+  if(!getDataAndReportError(&temp, &prices)){
     os.Exit(0)
-  }*/
+  }
   fmt.Println(temp)
   fmt.Println(prices)
 
