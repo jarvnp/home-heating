@@ -33,6 +33,7 @@ func GetPrices(periodStart string, periodEnd string, client http.Client)([]float
   if err != nil {
     return nil,err;
   }
+  //fmt.Println(string(body))
   var dat PriceData
   if err := xml.Unmarshal(body, &dat); err != nil {
       return nil,err

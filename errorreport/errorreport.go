@@ -1,9 +1,10 @@
 package errorreport
 
 import(
-  "home-heating/email"
+  //"home-heating/email"
   "net/http"
   "time"
+  "fmt"
 )
 
 const HEADER = "Lämmityssysteemin ERROR!"
@@ -15,8 +16,11 @@ func Report(description string, errorText string){
     Timeout: 60 * time.Second,
   }
 
-  err:= email.SendEmail(RECIPIENTS,HEADER,description + "\n\n" + errorText,client)
+  //while testing:
+  fmt.Println("error: ", description + "\n\n" + errorText,client)
+
+  /*err:= email.SendEmail(RECIPIENTS,HEADER,description + "\n\n" + errorText,client)
   if(err != nil){
     panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
-  }
+  }*/
 }
