@@ -7,14 +7,16 @@ import(
   "encoding/json"
   "errors"
   "home-heating/config"
+  "time"
 )
 
 
-const REQUEST = "https://api.openweathermap.org/data/2.5/forecast?"+ config.LOCATION +"&cnt=8&units=metric&appid="+config.WEATHER_TOKEN
+const REQUEST = "https://api.openweathermap.org/data/2.5/forecast?"+ config.LOCATION +"&units=metric&appid="+config.WEATHER_TOKEN
 
 type TemperatureData struct{
   Count int `json:"cnt"`
   List []struct{
+    Time int64 `json:"dt"`
     Main struct{
       Temperature float64 `json:"temp"`
     }`json:"main"`
@@ -22,7 +24,8 @@ type TemperatureData struct{
 }
 
 //return (temp,errorcode)
-func GetTemperature(client http.Client)(float64, error){
+//returns average temperature from the next 24h starting from timeNow (unix, UTC)
+func GetTemperature(client http.Client, startTime time.Time)(float64, error){
   resp, err := client.Get(REQUEST)
   if err != nil {
     return 0,err;
@@ -42,9 +45,24 @@ func GetTemperature(client http.Client)(float64, error){
     return 0,errors.New(resp.Status);
   }
   var temperature float64 = 0.0;
+  var count int = 0;
   for i:= range dat.List{
-    temperature += dat.List[i].Main.Temperature;
+
+    //we only care about the next 24h
+    if((dat.List[i].Time - startTime.Unix()) > 24*3600){
+      break
+    }
+
+    if(dat.List[i].Time > startTime.Unix()){
+      temperature += dat.List[i].Main.Temperature;
+      count++
+    }
   }
-  temperature /= float64(dat.Count);
+
+  if(count == 0){
+    return 0,errors.New("Didn't receive data for the date specified")
+  }
+
+  temperature /= float64(count);
   return temperature,nil;
 }

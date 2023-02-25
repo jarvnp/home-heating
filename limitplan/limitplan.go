@@ -176,7 +176,20 @@ func UpdatePlan(filename string, plan *PlanData)error{
   if(lastPlanHourDate != nextDateString){
 
     //even though we will be fetching tomorrow's data, the fetch period starts today. This is because the price API considers days to begin at 2300 (or 2200 during summertime)
+    //we request tomorrows date beginning from today 2200 and ending tomorrow 2200
+    //This is because our API considers days to start (in Finland) at 2300 or 2200 depending on weather we live in summer time or winter time
+    //The last hours of a day are published with the next day, so we would get that data too late, if we always requested for example from 00.00 to 00.00
     fetchPeriodStartDate := time.Now().UTC()
+    fetchPeriodStartDate = time.Date(
+      fetchPeriodStartDate.Year(),
+      fetchPeriodStartDate.Month(),
+      fetchPeriodStartDate.Day(),
+      22, //Hour
+      00, //minute
+      00, //second
+      0,  //nanosecond
+      time.UTC,
+    )
 
     //before adding a plan for tomorrow, check if we have today's plan (if not, an error has ocurred)
     curDateString := time.Now().UTC().Format("02012006")
@@ -207,20 +220,14 @@ func getNewData(plan *PlanData, fetchPeriodStartDate time.Time)error{
     Timeout: 60 * time.Second,
   }
   var err error
-  temperature, err := temperature.GetTemperature(client);
+  temperature, err := temperature.GetTemperature(client,fetchPeriodStartDate);
   if err != nil{
     return err
   }
 
-  startDateString := fetchPeriodStartDate.Format("20060102")
   endDate := fetchPeriodStartDate.AddDate(0,0,1)
-  endDateString := endDate.Format("20060102")
 
-
-  //we request tomorrows date beginning from today 2200 and ending tomorrow 2200
-  //This is because our API considers days to start (in Finland) at 2300 or 2200 depending on weather we live in summer time or winter time
-  //The last hours of a day are published with the next day, so we would get that data too late, if we always requested for example from 00.00 to 00.00
-  prices,err := electricityprice.GetPrices(startDateString+"2200", endDateString+"2200",client);
+  prices,err := electricityprice.GetPrices(fetchPeriodStartDate.Format("200601021504"), endDate.Format("200601021504"),client);
   if(err != nil){
     return err
   }
