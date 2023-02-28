@@ -9,7 +9,7 @@ import(
 
 
 func main(){
-  dat, err := os.ReadFile("/home/matias/go/src/home-heating/error")
+  dat, err := os.ReadFile("error")
   if(err != nil){
     panic(err)
   }
@@ -17,5 +17,5 @@ func main(){
     fmt.Println("Odottamaton error",string(dat))
     errorreport.Report("Odottamaton error",string(dat))
   }
-  os.Truncate("/home/matias/go/src/home-heating/error",0)
+  os.Truncate("error",0)
 }

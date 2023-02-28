@@ -4,12 +4,11 @@ import(
   "fmt"
   "sort"
   "time"
-  "os"
-  "io/ioutil"
-  "encoding/json"
   "net/http"
   "home-heating/electricityprice"
   "home-heating/temperature"
+  "home-heating/config"
+  "home-heating/jsonrw"
 )
 
 
@@ -161,7 +160,30 @@ func addBuffer(plan *[]int, temperature float64){
 }
 
 
+
+func timeStrToTime(timeStr string)(time.Time,error){
+  time,err := time.Parse("020120061504", timeStr)
+  return time,err
+}
+
+
+
 func UpdatePlan(filename string, plan *PlanData)error{
+
+  //remove old data from plan
+  for len((*plan).Hours) > 0{
+    planTime, err := timeStrToTime((*plan).Hours[0].Time)
+    if(err != nil){
+      return err
+    }
+    if(time.Now().UTC().Sub(planTime) > time.Hour*24*config.PLAN_STORE_DURATION){
+      (*plan).Hours = (*plan).Hours[1:]
+    }else{
+      break
+    }
+  }
+  jsonrw.WriteToJsonFile(filename,plan)
+
   //we will be fetching tomorrow's prices
   todayString := time.Now().UTC().Format("02012006")
   tomorrowString := time.Now().UTC().AddDate(0,0,1).Format("02012006")
@@ -226,7 +248,7 @@ func UpdatePlan(filename string, plan *PlanData)error{
       }
 
     }else{
-      WritePlansToJson(filename,plan)
+      jsonrw.WriteToJsonFile(filename,plan)
     }
   }
   return nil
@@ -306,45 +328,4 @@ func FindLimitForNow(plan *PlanData)(int,error){
   fmt.Println((*plan).Hours[index].Time)
   fmt.Println(curTime)
   return (*plan).Hours[index].Limit,nil
-}
-
-
-func GetPlansFromJson(filename string, plan *PlanData)error{
-  _,err := os.Stat(filename)
-  var jsonFile *os.File
-  if(err != nil){
-    jsonFile,err = os.Create(filename)
-  }else{
-    jsonFile, err = os.Open(filename)
-  }
-  defer jsonFile.Close()
-  if err != nil {
-    return err
-  }
-
-
-  byteVal,err := ioutil.ReadAll(jsonFile)
-  if(err != nil){
-    return err
-  }
-  err = json.Unmarshal(byteVal, plan)
-
-  return err
-}
-
-
-
-func WritePlansToJson(filename string, plan *PlanData)error{
-  jsonFile,err := os.Create(filename)
-  defer jsonFile.Close()
-
-  toWrite,err := json.Marshal(plan)
-  if(err != nil){
-    return err
-  }
-
-  _,err = jsonFile.Write(toWrite)
-  fmt.Println(string(toWrite))
-  return err
-
 }
