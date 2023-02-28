@@ -67,9 +67,8 @@ func GetPrices(periodStart string, periodEnd string, client http.Client)([]float
   }
 
   //the api gives data only in specific 24h chunks. So it might give more data than requested. Ignore the extra data
-
   if(receivedPeriodStart.After(requestedPeriodStart)){
-    return nil, errors.New("Didn't receive requested data")
+    return nil, errors.New("Didn't receive requested data\nreceivedPeriodStart.After(requestedPeriodStart)\n" + string(body))
   }
   for(receivedPeriodStart.Before(requestedPeriodStart)){
     dat.Prices = dat.Prices[1:]
@@ -77,7 +76,7 @@ func GetPrices(periodStart string, periodEnd string, client http.Client)([]float
   }
 
   if(receivedPeriodEnd.Before(requestedPeriodEnd)){
-    return nil, errors.New("Didn't receive requested data")
+    return nil, errors.New("Didn't receive requested data\nreceivedPeriodEnd.Before(requestedPeriodEnd)\n"+ string(body))
   }
   for(receivedPeriodEnd.After(requestedPeriodEnd)){
     dat.Prices = dat.Prices[:len(dat.Prices)-1]

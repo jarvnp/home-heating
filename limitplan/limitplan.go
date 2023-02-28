@@ -163,7 +163,8 @@ func addBuffer(plan *[]int, temperature float64){
 
 func UpdatePlan(filename string, plan *PlanData)error{
   //we will be fetching tomorrow's prices
-  nextDateString := time.Now().UTC().AddDate(0,0,1).Format("02012006")
+  todayString := time.Now().UTC().Format("02012006")
+  tomorrowString := time.Now().UTC().AddDate(0,0,1).Format("02012006")
 
   //check if we already have tomorrow's plan
   var lastPlanHourDate string = ""
@@ -173,9 +174,27 @@ func UpdatePlan(filename string, plan *PlanData)error{
     //remove 4 last characters (clock information)
     lastPlanHourDate = lastPlanHourDate[0:len(lastPlanHourDate)-4]
   }
-  if(lastPlanHourDate != nextDateString){
 
-    //even though we will be fetching tomorrow's data, the fetch period starts today. This is because the price API considers days to begin at 2300 (or 2200 during summertime)
+  var haveTomorrow bool = true
+  var haveToday bool = true
+  if(lastPlanHourDate != tomorrowString){
+    haveTomorrow = false
+    if(lastPlanHourDate != todayString){
+      haveToday = false
+    }
+  }
+
+  //if we already have today's data, we don't need to try to fetch tomorrow's data until afternoon
+  //(the data isn't even published earlier)
+  if(haveToday && time.Now().UTC().Hour() < 14){
+    return nil
+  }
+
+  if(!haveToday || !haveTomorrow){
+
+
+
+    //If we fect tomorror's data, the fetch period starts today. This is because the price API considers days to begin at 2300 (or 2200 during summertime)
     //we request tomorrows date beginning from today 2200 and ending tomorrow 2200
     //This is because our API considers days to start (in Finland) at 2300 or 2200 depending on weather we live in summer time or winter time
     //The last hours of a day are published with the next day, so we would get that data too late, if we always requested for example from 00.00 to 00.00
@@ -191,20 +210,19 @@ func UpdatePlan(filename string, plan *PlanData)error{
       time.UTC,
     )
 
-    //before adding a plan for tomorrow, check if we have today's plan (if not, an error has ocurred)
-    curDateString := time.Now().UTC().Format("02012006")
-    if(lastPlanHourDate != curDateString){
+    if(!haveToday){
       fetchPeriodStartDate = fetchPeriodStartDate.AddDate(0,0,-1)
     }
-
     err := getNewData(plan,fetchPeriodStartDate)
     if(err != nil){
 
       //if we were trying to fetch today's prices, and it didn't succeed, that is an error.
       //If we were trying to fetch tomorrow's prices and it didn't succeed, it's okay. We can try again next hour,
       //until the day changes.
-      if(fetchPeriodStartDate.Format("02.01.2006") == time.Now().UTC().AddDate(0,0,-1).Format("02.01.2006")){
+      if(!haveToday){
         return err
+      }else{
+        fmt.Println("Tried but didn't get tomorrow's data: " + err.Error())
       }
 
     }else{
@@ -274,7 +292,7 @@ func FindLimitForNow(plan *PlanData)(int,error){
   if(err != nil){
     return 0,err
   }
-  for latestPlannedHourTime.Sub(curTime) > time.Hour{
+  for latestPlannedHourTime.After(curTime){
     index--
     if(index < 0){
       return 0, errors.New("Current hour not found (index<0)")
@@ -285,7 +303,8 @@ func FindLimitForNow(plan *PlanData)(int,error){
       return 0,err
     }
   }
-
+  fmt.Println((*plan).Hours[index].Time)
+  fmt.Println(curTime)
   return (*plan).Hours[index].Limit,nil
 }
 
