@@ -15,7 +15,7 @@ import(
 
 func main() {
 
-  var plan limitplan.PlanData;
+  var plan []limitplan.PlanData;
 
   err := jsonrw.ReadFromJsonFile("plan.json", &plan)
   if(err != nil){

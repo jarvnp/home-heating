@@ -18,11 +18,11 @@ func ReadFromJsonFile(filename string, data interface{})error{
 
   byteVal,err := ioutil.ReadAll(jsonFile)
   if(len(byteVal) == 0){
-    _,err = jsonFile.WriteString("{}")  //empty json
+    _,err = jsonFile.WriteString("null")  //empty json
     if(err != nil){
       return err
     }
-    byteVal = append(byteVal,[]byte("{}")...)
+    byteVal = append(byteVal,[]byte("null")...)
   }
   if(err != nil){
     return err

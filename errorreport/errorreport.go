@@ -5,20 +5,15 @@ import(
   "net/http"
   "time"
   "fmt"
-
   "home-heating/config"
   "home-heating/jsonrw"
 )
 
 const HEADER = "Lämmityssysteemin ERROR!"
 
-type singleErrorData struct{
+type errorData struct{
   ErrorCode int
   Time string //ddmmyyyyhhmm
-}
-
-type errorData struct{
-  Errors [] singleErrorData
 }
 
 
@@ -32,16 +27,15 @@ func timeStrToTime(timeStr string)(time.Time,error){
 
 //checks if we have recenlty reported on the same error
 func isRecentlyReported(errorCode int)(bool, error){
-  var errorHistory errorData
+  var errorHistory []errorData
   err := jsonrw.ReadFromJsonFile("errorhistory.json",&errorHistory)
   if(err != nil){
     return false,err
   }
-  fmt.Println(errorHistory)
   timeNow := time.Now().UTC()
-  for i:= range errorHistory.Errors{
-    if(errorHistory.Errors[i].ErrorCode == errorCode){
-      errorTime,err := timeStrToTime(errorHistory.Errors[i].Time)
+  for i:= range errorHistory{
+    if(errorHistory[i].ErrorCode == errorCode){
+      errorTime,err := timeStrToTime(errorHistory[i].Time)
       if(err != nil){
         return false,err
       }
@@ -56,26 +50,26 @@ func isRecentlyReported(errorCode int)(bool, error){
 
 //stores info about made error report
 func storeError(errorCode int)(error){
-  var errorHistory errorData
+  var errorHistory []errorData
 
   err:= jsonrw.ReadFromJsonFile("errorhistory.json", &errorHistory)
   if(err != nil){
     return err
   }
-  var newError singleErrorData
+  var newError errorData
   newError.Time = time.Now().UTC().Format("020120061504")
   newError.ErrorCode = errorCode
 
   //remove old errors with same errorcode
-  for i:= range errorHistory.Errors{
-    if(errorHistory.Errors[i].ErrorCode == errorCode){
+  for i:= range errorHistory{
+    if(errorHistory[i].ErrorCode == errorCode){
       //replace the to-be-removed element with the last element, and remove last element
-      errorHistory.Errors[i] = errorHistory.Errors[len(errorHistory.Errors)-1]
-      errorHistory.Errors = errorHistory.Errors[:len(errorHistory.Errors)-1]
+      errorHistory[i] = errorHistory[len(errorHistory)-1]
+      errorHistory = errorHistory[:len(errorHistory)-1]
     }
   }
 
-  errorHistory.Errors = append(errorHistory.Errors,newError)
+  errorHistory = append(errorHistory,newError)
 
   err = jsonrw.WriteToJsonFile("errorhistory.json",&errorHistory)
 

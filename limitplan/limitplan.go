@@ -12,13 +12,9 @@ import(
 )
 
 
-type OneHourPlanData struct{
+type PlanData struct{
   Time string //format: ddmmyyyyhhmm
   Limit int
-}
-
-type PlanData struct{
-  Hours []OneHourPlanData
 }
 
 
@@ -168,16 +164,16 @@ func timeStrToTime(timeStr string)(time.Time,error){
 
 
 
-func UpdatePlan(filename string, plan *PlanData)error{
+func UpdatePlan(filename string, plan *[]PlanData)error{
 
   //remove old data from plan
-  for len((*plan).Hours) > 0{
-    planTime, err := timeStrToTime((*plan).Hours[0].Time)
+  for len(*plan) > 0{
+    planTime, err := timeStrToTime((*plan)[0].Time)
     if(err != nil){
       return err
     }
     if(time.Now().UTC().Sub(planTime) > time.Hour*24*config.PLAN_STORE_DURATION){
-      (*plan).Hours = (*plan).Hours[1:]
+      *plan = (*plan)[1:]
     }else{
       break
     }
@@ -190,8 +186,8 @@ func UpdatePlan(filename string, plan *PlanData)error{
 
   //check if we already have tomorrow's plan
   var lastPlanHourDate string = ""
-  if(len(plan.Hours) != 0){
-    lastPlanHourDate = plan.Hours[len(plan.Hours)-1].Time
+  if(len(*plan) != 0){
+    lastPlanHourDate = (*plan)[len(*plan)-1].Time
 
     //remove 4 last characters (clock information)
     lastPlanHourDate = lastPlanHourDate[0:len(lastPlanHourDate)-4]
@@ -255,7 +251,7 @@ func UpdatePlan(filename string, plan *PlanData)error{
 }
 
 
-func getNewData(plan *PlanData, fetchPeriodStartDate time.Time)error{
+func getNewData(plan *[]PlanData, fetchPeriodStartDate time.Time)error{
   client := http.Client{
     Timeout: 60 * time.Second,
   }
@@ -289,11 +285,11 @@ func getNewData(plan *PlanData, fetchPeriodStartDate time.Time)error{
   )
 
   for i:= range limits{
-    var newHour OneHourPlanData
+    var newHour PlanData
     newHour.Limit = limits[i]
     newHour.Time = startTime.Format("020120061504")
     startTime = startTime.Add(time.Hour)
-    (*plan).Hours = append( (*plan).Hours, newHour)
+    *plan = append( *plan, newHour)
   }
 
   return nil
@@ -301,15 +297,15 @@ func getNewData(plan *PlanData, fetchPeriodStartDate time.Time)error{
 
 
 
-func FindLimitForNow(plan *PlanData)(int,error){
+func FindLimitForNow(plan *[]PlanData)(int,error){
   curTime := time.Now().UTC()
 
-  if(len((*plan).Hours) == 0){
+  if(len(*plan) == 0){
     return 0, errors.New("Plan length 0")
   }
 
-  index := len((*plan).Hours)-1
-  latestPlannedHourTimeStr := (*plan).Hours[index].Time
+  index := len(*plan)-1
+  latestPlannedHourTimeStr := (*plan)[index].Time
   latestPlannedHourTime,err := time.Parse("020120061504",latestPlannedHourTimeStr)
   if(err != nil){
     return 0,err
@@ -319,13 +315,13 @@ func FindLimitForNow(plan *PlanData)(int,error){
     if(index < 0){
       return 0, errors.New("Current hour not found (index<0)")
     }
-    latestPlannedHourTimeStr = (*plan).Hours[index].Time
+    latestPlannedHourTimeStr = (*plan)[index].Time
     latestPlannedHourTime,err = time.Parse("020120061504",latestPlannedHourTimeStr)
     if(err != nil){
       return 0,err
     }
   }
-  fmt.Println((*plan).Hours[index].Time)
+  fmt.Println((*plan)[index].Time)
   fmt.Println(curTime)
-  return (*plan).Hours[index].Limit,nil
+  return (*plan)[index].Limit,nil
 }
