@@ -6,12 +6,12 @@ import(
   "io/ioutil"
   "encoding/json"
   "errors"
-  "home-heating/config"
+  "home-heating/secret"
   "time"
 )
 
 
-const REQUEST = "https://api.openweathermap.org/data/2.5/forecast?"+ config.LOCATION +"&units=metric&appid="+config.WEATHER_TOKEN
+const REQUEST = "https://api.openweathermap.org/data/2.5/forecast?"+ secret.LOCATION +"&units=metric&appid="+secret.WEATHER_TOKEN
 
 type TemperatureData struct{
   Count int `json:"cnt"`

@@ -5,11 +5,12 @@ import(
   "strconv"
   "errors"
   "home-heating/config"
+  "home-heating/secret"
   "time"
 )
 
 
-const SWITCH_MAX_ON_TIME = 3600*3;
+
 
 
 
@@ -31,9 +32,9 @@ func SetLimit(limit int)error{
 func setSwitch(id uint8, value bool, client http.Client)error{
   var request string;
   if value == true{
-    request = config.SHELLY_ADDRESS+"/rpc/Switch.Set?id="+strconv.Itoa(int(id))+"&on=true&toggle_after="+strconv.Itoa(int(SWITCH_MAX_ON_TIME))
+    request = secret.SHELLY_ADDRESS+"/rpc/Switch.Set?id="+strconv.Itoa(int(id))+"&on=true&toggle_after="+strconv.Itoa(int(config.SHELLY_SWITCH_MAX_ON_TIME))
   }else{
-    request = config.SHELLY_ADDRESS+"/rpc/Switch.Set?id=" +strconv.Itoa(int(id))+"&on=false"
+    request = secret.SHELLY_ADDRESS+"/rpc/Switch.Set?id=" +strconv.Itoa(int(id))+"&on=false"
   }
 
   resp, err := client.Get(request)
@@ -52,7 +53,7 @@ func setSwitch(id uint8, value bool, client http.Client)error{
 //the script will send warning email, if it is not reset periodically
 func resetShellyWatchdogScript(client http.Client)error{
   var request string
-  request = config.SHELLY_ADDRESS + "/rpc/Script.Stop?id=" + config.SHELLY_WATCHDOG_SCRIPT_ID
+  request = secret.SHELLY_ADDRESS + "/rpc/Script.Stop?id=" + config.SHELLY_WATCHDOG_SCRIPT_ID
   resp, err := client.Get(request)
   if err != nil {
     return err;
@@ -61,7 +62,7 @@ func resetShellyWatchdogScript(client http.Client)error{
     return errors.New(resp.Status);
   }
 
-  request = config.SHELLY_ADDRESS + "/rpc/Script.Start?id=" + config.SHELLY_WATCHDOG_SCRIPT_ID
+  request = secret.SHELLY_ADDRESS + "/rpc/Script.Start?id=" + config.SHELLY_WATCHDOG_SCRIPT_ID
   resp, err = client.Get(request)
   if err != nil {
     return err;

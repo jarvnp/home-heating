@@ -97,7 +97,7 @@ func Report(description string, errorText string, errorCode int){
     fmt.Println("No need to report")
   }else{
     storeError(errorCode)
-    /*err:= email.SendEmail(config.RECIPIENTS,HEADER,description + "\n\n" + errorText,client)
+    /*err:= email.SendEmail(secret.RECIPIENTS,HEADER,description + "\n\n" + errorText,client)
     if(err != nil){
       panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
     }*/
@@ -138,7 +138,7 @@ func ReportRecovery(){
     Timeout: 60 * time.Second,
   }*/
   /*
-  err:= email.SendEmail(config.RECIPIENTS,RECOVERY_HEADER,RECOVERY_MESSAGE,client)
+  err:= email.SendEmail(secret.RECIPIENTS,RECOVERY_HEADER,RECOVERY_MESSAGE,client)
   if(err != nil){
     panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
   }*/

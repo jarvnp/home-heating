@@ -6,14 +6,14 @@ import(
   "errors"
   "io/ioutil"
   "encoding/json"
-  "home-heating/config"
+  "home-heating/secret"
 )
 
 const URL = "https://send.api.mailtrap.io/api/send"
 
 
 
-const FROM_NAME = "Lämmityssysteemi"
+
 
 
 type Response struct{
@@ -41,8 +41,8 @@ func getMessageBody(recipients []string, subject string, message string)string{
   var body Request;
   body.Subject = subject
   body.Text = message
-  body.From.Email = config.FROM_EMAIL
-  body.From.Name = FROM_NAME
+  body.From.Email = secret.FROM_EMAIL
+  body.From.Name = secret.FROM_NAME
 
   for i:= range recipients{
     var recipient Recipient;
@@ -62,7 +62,7 @@ func SendEmail(recipients []string, subject string, message string, client http.
     return err;
   }
   req.Header.Add("Content-Type", "application/json")
-  req.Header.Add("Api-Token", config.EMAIL_TOKEN)
+  req.Header.Add("Api-Token", secret.EMAIL_TOKEN)
 
   resp, err := client.Do(req)
   if(err != nil){
