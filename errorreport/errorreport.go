@@ -11,6 +11,10 @@ import(
 
 const HEADER = "Lämmityssysteemin ERROR!"
 
+const RECOVERY_HEADER = "Lämmityssysteemi toimii taas"
+const RECOVERY_MESSAGE = "Lämmityssysteemi on palannut normaaliin toimintaan"
+
+
 type errorData struct{
   ErrorCode int
   Time string //ddmmyyyyhhmm
@@ -99,4 +103,43 @@ func Report(description string, errorText string, errorCode int){
     }*/
   }
 
+}
+
+//returns true if there has previously been an error
+func IsRecovery()(bool){
+  var errorHistory []errorData
+  err := jsonrw.ReadFromJsonFile("errorhistory.json",&errorHistory)
+  if(err != nil){
+    panic(err)
+  }
+  if(len(errorHistory) != 0){
+    return true
+  }
+  return false
+}
+
+func ClearErrorHistory(){
+  var errorHistory []errorData
+  err := jsonrw.WriteToJsonFile("errorhistory.json",&errorHistory)
+  if(err != nil){
+    panic(err)
+  }
+}
+
+
+
+func ReportRecovery(){
+
+
+  //while debugging:
+  fmt.Println(RECOVERY_HEADER + "\n\n"  + RECOVERY_MESSAGE)
+
+  /*client := http.Client{
+    Timeout: 60 * time.Second,
+  }*/
+  /*
+  err:= email.SendEmail(config.RECIPIENTS,RECOVERY_HEADER,RECOVERY_MESSAGE,client)
+  if(err != nil){
+    panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
+  }*/
 }

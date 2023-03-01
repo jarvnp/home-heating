@@ -44,4 +44,12 @@ func main() {
     errorreport.Report("Ongelmia shellyn kanssa", err.Error(), config.ERROR_CODE_SHELLY)
     os.Exit(0)
   }
+
+  //no errors have occured if we've made it this far
+  //if there has recently been an error, and now we are back at normal operation, the program reports that
+  if(errorreport.IsRecovery()){
+    errorreport.ReportRecovery()
+    errorreport.ClearErrorHistory()
+  }
+
 }
