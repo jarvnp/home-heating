@@ -11,11 +11,14 @@ const(
 
   DELAY_BETWEEN_ERROR_MESSAGES = 24 //how often to send error message on same error (hours)
 
-
+  ERROR_CODE_PANIC = 0
   ERROR_CODE_JSON = 1
   ERROR_CODE_DATA_FETCH = 2
   ERROR_CODE_LIMIT_CALC = 3
   ERROR_CODE_SHELLY = 4
+
+
+  ENABLE_EMAIL_REPORTS = true
 
 )
 

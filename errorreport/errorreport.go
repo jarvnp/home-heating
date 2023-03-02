@@ -1,11 +1,12 @@
 package errorreport
 
 import(
-  //"home-heating/email"
+  "home-heating/email"
   "net/http"
   "time"
   "fmt"
   "home-heating/config"
+  "home-heating/secret"
   "home-heating/jsonrw"
 )
 
@@ -89,18 +90,26 @@ func Report(description string, errorText string, errorCode int){
   //while testing:
   fmt.Println("error: ", description + "\n\n" + errorText,client)
 
-  isReported, err := isRecentlyReported(errorCode)
-  if(err != nil){
-    panic(err)
+  var isReported bool = false
+  var err error
+  //always report if there has been panic
+  if(errorCode != config.ERROR_CODE_PANIC){
+    isReported, err = isRecentlyReported(errorCode)
+    if(err != nil){
+      panic(err)
+    }
   }
-  if(isReported){
+
+  if(isReported && (errorCode != config.ERROR_CODE_PANIC)){
     fmt.Println("No need to report")
   }else{
     storeError(errorCode)
-    /*err:= email.SendEmail(secret.RECIPIENTS,HEADER,description + "\n\n" + errorText,client)
-    if(err != nil){
-      panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
-    }*/
+    if(config.ENABLE_EMAIL_REPORTS){
+      err:= email.SendEmail(secret.RECIPIENTS,HEADER,description + "\n\n" + errorText,client)
+      if(err != nil){
+        panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
+      }
+    }
   }
 
 }
@@ -134,12 +143,13 @@ func ReportRecovery(){
   //while debugging:
   fmt.Println(RECOVERY_HEADER + "\n\n"  + RECOVERY_MESSAGE)
 
-  /*client := http.Client{
-    Timeout: 60 * time.Second,
-  }*/
-  /*
-  err:= email.SendEmail(secret.RECIPIENTS,RECOVERY_HEADER,RECOVERY_MESSAGE,client)
-  if(err != nil){
-    panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
-  }*/
+  if(config.ENABLE_EMAIL_REPORTS){
+    client := http.Client{
+      Timeout: 60 * time.Second,
+    }
+    err:= email.SendEmail(secret.RECIPIENTS,RECOVERY_HEADER,RECOVERY_MESSAGE,client)
+    if(err != nil){
+      panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
+    }
+  }
 }
