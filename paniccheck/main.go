@@ -10,7 +10,7 @@ import(
 
 
 func main(){
-  dat, err := os.ReadFile("error")
+  dat, err := os.ReadFile(config.ERROR_FILE_NAME)
   if(err != nil){
     panic(err)
   }
@@ -18,5 +18,5 @@ func main(){
     fmt.Println("Odottamaton error",string(dat))
     errorreport.Report("Odottamaton error",string(dat),config.ERROR_CODE_PANIC)
   }
-  os.Truncate("error",0)
+  os.Truncate(config.ERROR_FILE_NAME,0)
 }

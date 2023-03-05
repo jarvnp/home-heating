@@ -259,7 +259,7 @@ func getNewData(plan *[]PlanData, fetchPeriodStartDate time.Time)error{
   if err != nil{
     return err
   }
-
+  fmt.Println(temperature)
   endDate := fetchPeriodStartDate.AddDate(0,0,1)
 
   prices,err := electricityprice.GetPrices(fetchPeriodStartDate.Format("200601021504"), endDate.Format("200601021504"),client);
