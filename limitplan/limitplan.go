@@ -23,7 +23,7 @@ const MINIMI_TEMP = (24*config.MAKSIMI_TEHO-101.51)/(-4.59)  //Missä lämpötil
 
 
 const NO_LIMIT=3
-//SMALL_LIMIT:=2
+const SMALL_LIMIT=2
 //BIG_LIMIT=1
 const TOTAL_LIMIT=0
 
@@ -96,27 +96,8 @@ func getLimits(temperature float64, prices []float64)([]int,error){
 }
 
 
-//after total limit we will limit the following hours to prevent power surge after TOTAL_LIMIT
-//the limit will last the same time that the total limit lasted
-//half of the limit time there will be smaller limit than the planned power
-//the the other half there will be larger limit than the planned power
+//after total limit we will limit the following hours with small limit to prevent power surge after TOTAL_LIMIT
 func addBuffer(plan *[]int, temperature float64){
-  var plannedPower = plannedPowerWhenActive(temperature)
-
-
-  //Oletetaan että lämpötila liikkuu välillä -20...15
-  //Valitaan kaksi tehorajoitusarvoa tältä väliltä tasaisesti
-  powerLimits := []float64{0, plannedPowerWhenActive(3.34), plannedPowerWhenActive(-8.32), config.MAKSIMI_TEHO}
-  //fmt.Println(powerLimits)
-
-
-  //find a limit thats closest to the plannedpower (But the limit power is smaller than planned power)
-  var closestPowerLimit = TOTAL_LIMIT
-  for (powerLimits[closestPowerLimit+1] < plannedPower) && (closestPowerLimit < NO_LIMIT){
-    closestPowerLimit++
-  }
-  //fmt.Println("Planned: ", plannedPower, "Limit: ", powerLimits[closestPowerLimit])
-
 
   var totalLimitHoursSequental = 0
 
@@ -133,17 +114,12 @@ func addBuffer(plan *[]int, temperature float64){
           limitTime++
         }
 
+        if(limitTime > config.MAX_LIMIT_HOURS_AFTER_TOTAL_LIMIT){
+          limitTime = config.MAX_LIMIT_HOURS_AFTER_TOTAL_LIMIT
+        }
 
         for j:=0; j<limitTime; j++{
-          if(j < limitTime/2){
-            if(closestPowerLimit == TOTAL_LIMIT){
-              (*plan)[j+i] = closestPowerLimit+1
-            }else{
-              (*plan)[j+i] = closestPowerLimit
-            }
-          }else{
-            (*plan)[j+i] = closestPowerLimit+1
-          }
+          (*plan)[j+i] = SMALL_LIMIT
         }
 
         i+=limitTime

@@ -36,8 +36,11 @@ const(
   ENABLE_EMAIL_REPORTS = true
 
 
-
+  //error-tiedoston nimi
   ERROR_FILE_NAME = "error.txt"
+
+
+  MAX_LIMIT_HOURS_AFTER_TOTAL_LIMIT = 2
 
 )
 
