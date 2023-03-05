@@ -18,9 +18,8 @@ type PlanData struct{
 }
 
 
-const PASSIIVISET_TUNNIT_KUN_PAKKASTA_10 = 5
-const MAKSIMI_TEHO = 10 //kWh
-const MINIMI_TEMP = (24*MAKSIMI_TEHO-101.51)/(-4.59)  //Missä lämpötilassa lämmitys pitää olla koko ajan päällä. Perustuu energyUsage-function tietoihin.
+
+const MINIMI_TEMP = (24*config.MAKSIMI_TEHO-101.51)/(-4.59)  //Missä lämpötilassa lämmitys pitää olla koko ajan päällä. Perustuu energyUsage-function tietoihin.
 
 
 const NO_LIMIT=3
@@ -42,10 +41,10 @@ func passiveTime(temperature float64)int{
 }
 
 func plannedPowerWhenActive(temperature float64)float64{
-  var TEHO_KUN_PAKKASTA_10 float64= energyUsage(-10)/(24-PASSIIVISET_TUNNIT_KUN_PAKKASTA_10)
+  var TEHO_KUN_PAKKASTA_10 float64= energyUsage(-10)/(24-config.PASSIIVISET_TUNNIT_KUN_PAKKASTA_10)
 
   //lineaarinen sovitus tavoitellulle teholle siten käyttäen arvoja (MINIMI_TEMP,MAKSIMITEHO), (-10,TEHO_KUN_PAKKASTA_10)
-  return ((MAKSIMI_TEHO-TEHO_KUN_PAKKASTA_10)/(MINIMI_TEMP+10))*(temperature-MINIMI_TEMP)+MAKSIMI_TEHO;
+  return ((config.MAKSIMI_TEHO-TEHO_KUN_PAKKASTA_10)/(MINIMI_TEMP+10))*(temperature-MINIMI_TEMP)+config.MAKSIMI_TEHO;
 }
 
 
@@ -107,7 +106,7 @@ func addBuffer(plan *[]int, temperature float64){
 
   //Oletetaan että lämpötila liikkuu välillä -20...15
   //Valitaan kaksi tehorajoitusarvoa tältä väliltä tasaisesti
-  powerLimits := []float64{0, plannedPowerWhenActive(3.34), plannedPowerWhenActive(-8.32), MAKSIMI_TEHO}
+  powerLimits := []float64{0, plannedPowerWhenActive(3.34), plannedPowerWhenActive(-8.32), config.MAKSIMI_TEHO}
   //fmt.Println(powerLimits)
 
 

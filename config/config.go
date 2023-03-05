@@ -9,6 +9,16 @@ const(
   PLAN_STORE_DURATION = 30     //how many days of plan to store
 
 
+  PASSIIVISET_TUNNIT_KUN_PAKKASTA_10 = 5
+  MAKSIMI_TEHO = 10 //kWh
+
+
+
+  ERROR_HEADER = "Lämmityssysteemin ERROR!"
+  RECOVERY_HEADER = "Lämmityssysteemi toimii taas"
+  RECOVERY_MESSAGE = "Lämmityssysteemi on palannut normaaliin toimintaan"
+
+
   DELAY_BETWEEN_ERROR_MESSAGES = 24 //how often to send error message on same error (hours)
 
   ERROR_CODE_PANIC = 0

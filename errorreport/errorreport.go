@@ -10,10 +10,7 @@ import(
   "home-heating/jsonrw"
 )
 
-const HEADER = "Lämmityssysteemin ERROR!"
 
-const RECOVERY_HEADER = "Lämmityssysteemi toimii taas"
-const RECOVERY_MESSAGE = "Lämmityssysteemi on palannut normaaliin toimintaan"
 
 
 type errorData struct{
@@ -105,7 +102,7 @@ func Report(description string, errorText string, errorCode int){
   }else{
     storeError(errorCode)
     if(config.ENABLE_EMAIL_REPORTS){
-      err:= email.SendEmail(secret.RECIPIENTS,HEADER,description + "\n\n" + errorText,client)
+      err:= email.SendEmail(secret.RECIPIENTS,config.ERROR_HEADER,description + "\n\n" + errorText,client)
       if(err != nil){
         panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
       }
@@ -141,13 +138,13 @@ func ReportRecovery(){
 
 
   //while debugging:
-  fmt.Println(RECOVERY_HEADER + "\n\n"  + RECOVERY_MESSAGE)
+  fmt.Println(config.RECOVERY_HEADER + "\n\n"  + config.RECOVERY_MESSAGE)
 
   if(config.ENABLE_EMAIL_REPORTS){
     client := http.Client{
       Timeout: 60 * time.Second,
     }
-    err:= email.SendEmail(secret.RECIPIENTS,RECOVERY_HEADER,RECOVERY_MESSAGE,client)
+    err:= email.SendEmail(secret.RECIPIENTS,config.RECOVERY_HEADER,config.RECOVERY_MESSAGE,client)
     if(err != nil){
       panic("Emailin lähetys ei onnistu:\n\n"+err.Error())
     }
