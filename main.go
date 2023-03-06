@@ -19,6 +19,7 @@ func main() {
 
   err := jsonrw.ReadFromJsonFile("plan.json", &plan)
   if(err != nil){
+    shelly.SetLimit(config.NO_LIMIT)
     errorreport.Report("Error plan tiedoston avaamisessa", err.Error(), config.ERROR_CODE_JSON)
     os.Exit(0)
   }
@@ -26,6 +27,7 @@ func main() {
 
   err = limitplan.UpdatePlan("plan.json",&plan)
   if(err != nil){
+    shelly.SetLimit(config.NO_LIMIT)
     errorreport.Report("Error tietojen haussa", err.Error(), config.ERROR_CODE_DATA_FETCH)
     os.Exit(0)
   }
@@ -34,6 +36,7 @@ func main() {
 
   limit,err := limitplan.FindLimitForNow(&plan)
   if(err != nil){
+    shelly.SetLimit(config.NO_LIMIT)
     errorreport.Report("Ongelmia rajoituksen haussa", err.Error(), config.ERROR_CODE_LIMIT_CALC)
     os.Exit(0)
   }

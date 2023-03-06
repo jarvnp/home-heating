@@ -42,6 +42,12 @@ const(
 
   MAX_LIMIT_HOURS_AFTER_TOTAL_LIMIT = 2
 
+  //numeroarvot eri rajoituksille. Ei tarvitse muokata
+  NO_LIMIT=3
+  SMALL_LIMIT=2
+  //BIG_LIMIT=1
+  TOTAL_LIMIT=0
+
 )
 
 

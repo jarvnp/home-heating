@@ -28,21 +28,21 @@ type TemperatureData struct{
 func GetTemperature(client http.Client, startTime time.Time)(float64, error){
   resp, err := client.Get(REQUEST)
   if err != nil {
-    return 0,err;
+    return 0,errors.New("Temperature fetch error1: " + err.Error())
   }
   body, err := ioutil.ReadAll(resp.Body)
   if err != nil {
-    return 0,err;
+    return 0,errors.New("Temperature fetch error2: " + err.Error());
   }
 
 
   var dat TemperatureData;
   if err := json.Unmarshal(body, &dat); err != nil {
-      return 0,err
+      return 0,errors.New("Temperature fetch error3: " + err.Error())
   }
 
   if(resp.StatusCode != 200){
-    return 0,errors.New(resp.Status);
+    return 0,errors.New("Temperature fetch error4: " +resp.Status);
   }
   var temperature float64 = 0.0;
   var count int = 0;
@@ -53,14 +53,14 @@ func GetTemperature(client http.Client, startTime time.Time)(float64, error){
       break
     }
 
-    if(dat.List[i].Time > startTime.Unix()){
+    if(dat.List[i].Time >= startTime.Unix()){
       temperature += dat.List[i].Main.Temperature;
       count++
     }
   }
 
   if(count == 0){
-    return 0,errors.New("Didn't receive data for the date specified")
+    return 0,errors.New("Didn't receive data for the date specified" + string(body))
   }
 
   temperature /= float64(count);

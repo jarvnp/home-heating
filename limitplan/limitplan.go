@@ -22,10 +22,7 @@ type PlanData struct{
 const MINIMI_TEMP = (24*config.MAKSIMI_TEHO-101.51)/(-4.59)  //Missä lämpötilassa lämmitys pitää olla koko ajan päällä. Perustuu energyUsage-function tietoihin.
 
 
-const NO_LIMIT=3
-const SMALL_LIMIT=2
-//BIG_LIMIT=1
-const TOTAL_LIMIT=0
+
 
 //Palauttaa arvioidun sähkönkäytön vuorokaudessa lämpötilan mukaan. [t] = Celcius
 //[E] = kWh
@@ -80,13 +77,13 @@ func getLimits(temperature float64, prices []float64)([]int,error){
   //fmt.Println(pricesWithIndex)
   var plan []int
   for i:=0;i<24;i++{
-    plan = append(plan,NO_LIMIT)
+    plan = append(plan,config.NO_LIMIT)
   }
 
   var passiveTime = passiveTime(temperature)
 
   for i:=0; i<passiveTime; i++{
-    plan[pricesWithIndex[i].Index] = TOTAL_LIMIT;
+    plan[pricesWithIndex[i].Index] = config.TOTAL_LIMIT;
   }
 
   addBuffer(&plan, temperature)
@@ -102,7 +99,7 @@ func addBuffer(plan *[]int, temperature float64){
   var totalLimitHoursSequental = 0
 
   for i:= range *plan{
-    if((*plan)[i] == TOTAL_LIMIT){
+    if((*plan)[i] == config.TOTAL_LIMIT){
       totalLimitHoursSequental++
     }else{
       if(totalLimitHoursSequental > 0){
@@ -110,7 +107,7 @@ func addBuffer(plan *[]int, temperature float64){
 
         //how many not limited hours there are after total limit
         //we will limit at max the same time that the total limit lasted
-        for j:=0; j<totalLimitHoursSequental && j+i<len(*plan) && (*plan)[j+i] == NO_LIMIT; j++{
+        for j:=0; j<totalLimitHoursSequental && j+i<len(*plan) && (*plan)[j+i] == config.NO_LIMIT; j++{
           limitTime++
         }
 
@@ -119,7 +116,7 @@ func addBuffer(plan *[]int, temperature float64){
         }
 
         for j:=0; j<limitTime; j++{
-          (*plan)[j+i] = SMALL_LIMIT
+          (*plan)[j+i] = config.SMALL_LIMIT
         }
 
         i+=limitTime
@@ -159,7 +156,7 @@ func UpdatePlan(filename string, plan *[]PlanData)error{
   todayString := time.Now().UTC().Format("02012006")
   tomorrowString := time.Now().UTC().AddDate(0,0,1).Format("02012006")
 
-  //check if we already have tomorrow's plan
+
   var lastPlanHourDate string = ""
   if(len(*plan) != 0){
     lastPlanHourDate = (*plan)[len(*plan)-1].Time
