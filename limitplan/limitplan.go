@@ -45,7 +45,7 @@ func plannedPowerWhenActive(temperature float64)float64{
 }
 
 
-func getLimits(temperature float64, prices []float64)([]int,error){
+func getLimits(temperature float64, prices []float64, plan *[]PlanData, fetchPeriodStartDate time.Time)([]int,error){
   //the linear models don't apply to too high temperatures
   if(temperature > 15.0){
     temperature = 15.0
@@ -75,31 +75,77 @@ func getLimits(temperature float64, prices []float64)([]int,error){
     return pricesWithIndex[i].Price > pricesWithIndex[j].Price
   })
   //fmt.Println(pricesWithIndex)
-  var plan []int
+  var plannedLimits []int
   for i:=0;i<24;i++{
-    plan = append(plan,config.NO_LIMIT)
+    plannedLimits = append(plannedLimits,config.NO_LIMIT)
   }
 
   var passiveTime = passiveTime(temperature)
 
   for i:=0; i<passiveTime; i++{
-    plan[pricesWithIndex[i].Index] = config.TOTAL_LIMIT;
+    plannedLimits[pricesWithIndex[i].Index] = config.TOTAL_LIMIT;
   }
 
-  addBuffer(&plan, temperature)
+  err:=  addBuffer(&plannedLimits, plan, fetchPeriodStartDate)
 
-  return plan,nil
+  return plannedLimits,err
 
 }
 
 
 //after total limit we will limit the following hours with small limit to prevent power surge after TOTAL_LIMIT
-func addBuffer(plan *[]int, temperature float64){
+//Check also if yesterday ended with full limit (or unfinished small limit),
+//in which case today must begin with small limit
+func addBuffer(plannedLimits *[]int, plan *[]PlanData, fetchPeriodStartDate time.Time)error{
 
-  var totalLimitHoursSequental = 0
+  var totalLimitHoursSequental int = 0
 
-  for i:= range *plan{
-    if((*plan)[i] == config.TOTAL_LIMIT){
+  var yesterdaysSmallLimitHours int = 0;
+
+  var startIndex = len(*plan)-1
+
+  //check if the most recent plan is from yesterday
+
+  if(startIndex >= 0){
+    lastPlanHourDate,err := timeStrToTime((*plan)[startIndex].Time)
+    if(err != nil){
+      return err;
+    }
+
+    if(fetchPeriodStartDate.Sub(lastPlanHourDate) <= time.Hour){
+
+
+      //if the most recent plan is from yesterday, check if yesterday ended with full limit (or unfinished small limit),
+      //in which case today must begin with small limit
+
+      for i:=startIndex; i>=0; i--{
+        if((*plan)[i].Limit == config.TOTAL_LIMIT){
+          totalLimitHoursSequental++
+        }else if( ((*plan)[i].Limit == config.SMALL_LIMIT) && (totalLimitHoursSequental == 0) ){
+          yesterdaysSmallLimitHours++
+        }else{
+          break
+        }
+      }
+
+      //after this totalLimitHoursSequental will correspond to the hours that need to be limited in the beginning of this new day
+      if(totalLimitHoursSequental > config.MAX_LIMIT_HOURS_AFTER_TOTAL_LIMIT){
+        totalLimitHoursSequental = config.MAX_LIMIT_HOURS_AFTER_TOTAL_LIMIT
+      }
+      totalLimitHoursSequental -= yesterdaysSmallLimitHours
+
+      //shoudn't happen
+      if(totalLimitHoursSequental < 0){
+        fmt.Println("unexpected: totalLimitHoursSequental < 0")
+        totalLimitHoursSequental = 0
+      }
+    }
+  }
+
+
+
+  for i:= range *plannedLimits{
+    if((*plannedLimits)[i] == config.TOTAL_LIMIT){
       totalLimitHoursSequental++
     }else{
       if(totalLimitHoursSequental > 0){
@@ -107,7 +153,7 @@ func addBuffer(plan *[]int, temperature float64){
 
         //how many not limited hours there are after total limit
         //we will limit at max the same time that the total limit lasted
-        for j:=0; j<totalLimitHoursSequental && j+i<len(*plan) && (*plan)[j+i] == config.NO_LIMIT; j++{
+        for j:=0; j<totalLimitHoursSequental && j+i<len(*plannedLimits) && (*plannedLimits)[j+i] == config.NO_LIMIT; j++{
           limitTime++
         }
 
@@ -116,7 +162,7 @@ func addBuffer(plan *[]int, temperature float64){
         }
 
         for j:=0; j<limitTime; j++{
-          (*plan)[j+i] = config.SMALL_LIMIT
+          (*plannedLimits)[j+i] = config.SMALL_LIMIT
         }
 
         i+=limitTime
@@ -125,6 +171,7 @@ func addBuffer(plan *[]int, temperature float64){
       totalLimitHoursSequental = 0
     }
   }
+  return nil
 }
 
 
@@ -152,7 +199,7 @@ func UpdatePlan(filename string, plan *[]PlanData)error{
   }
   jsonrw.WriteToJsonFile(filename,plan)
 
-  //we will be fetching tomorrow's prices
+
   todayString := time.Now().UTC().Format("02012006")
   tomorrowString := time.Now().UTC().AddDate(0,0,1).Format("02012006")
 
@@ -240,7 +287,7 @@ func getNewData(plan *[]PlanData, fetchPeriodStartDate time.Time)error{
     return err
   }
   var limits []int
-  limits,err = getLimits(temperature, prices)
+  limits,err = getLimits(temperature, prices, plan, fetchPeriodStartDate)
   if(err != nil){
     return err
   }
@@ -266,6 +313,7 @@ func getNewData(plan *[]PlanData, fetchPeriodStartDate time.Time)error{
 
   return nil
 }
+
 
 
 
