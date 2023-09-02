@@ -15,6 +15,10 @@ const(
   MAKSIMI_TEHO = 10 //kW
 
 
+  //Kuinka monta tuntia maksimissaan vuorokaudessa lämmitys on pois päältä
+  MAKSIMI_PASSIIVISET_TUNNIT = 14
+
+
   //sähköpostiviesteihin tulevat otsikot ja viestit
   ERROR_HEADER = "Lämmityssysteemin ERROR!"
   RECOVERY_HEADER = "Lämmityssysteemi toimii taas"

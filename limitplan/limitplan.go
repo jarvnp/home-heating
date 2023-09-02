@@ -34,7 +34,11 @@ func energyUsage(temperature float64)float64{
 //lämpötilan yksikkö Celcius, ajan yksikkö tunti
 func passiveTime(temperature float64)int{
   //t = E/P
-  return int(24.0-energyUsage(temperature)/plannedPowerWhenActive(temperature))
+  var time = int(24.0-energyUsage(temperature)/plannedPowerWhenActive(temperature))
+  if(time > config.MAKSIMI_PASSIIVISET_TUNNIT){
+    time = config.MAKSIMI_PASSIIVISET_TUNNIT
+  }
+  return time
 }
 
 func plannedPowerWhenActive(temperature float64)float64{
