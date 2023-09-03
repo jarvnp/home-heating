@@ -16,7 +16,7 @@ import(
 
 func SetLimit(limit int)error{
   client := http.Client{
-    Timeout: 30 * time.Second,
+    Timeout: 120 * time.Second,
   }
   err:=setSwitch(0,config.SHELLY_OUTPUT_STATES_FOR_LIMITS[limit][0],client)
   if(err != nil){

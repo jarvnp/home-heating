@@ -42,7 +42,17 @@ func main() {
   }
   fmt.Println(limit)
 
-  err = shelly.SetLimit(limit)
+
+  // Try to reach shelly multiple times
+  // This will hopefully reduce the amount of error messages sent
+  // So far connecting to Shelly causes most of the error messages
+  for i:=0;i<5;i++{
+    err = shelly.SetLimit(limit)
+    if(err == nil){
+      break
+    }
+  }
+
   if(err != nil){
     errorreport.Report("Ongelmia shellyn kanssa", err.Error(), config.ERROR_CODE_SHELLY)
     os.Exit(0)
