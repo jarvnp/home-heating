@@ -2,6 +2,7 @@ package main
 
 import(
   "fmt"
+  "time"
   "home-heating/errorreport"
   "home-heating/limitplan"
   "home-heating/shelly"
@@ -51,6 +52,9 @@ func main() {
     if(err == nil){
       break
     }
+    fmt.Println("Trying to connect to shelly, i = ",i);
+    fmt.Println("Error = ", err.Error());
+    time.Sleep(30 * time.Second)
   }
 
   if(err != nil){

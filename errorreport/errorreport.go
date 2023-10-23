@@ -63,11 +63,13 @@ func storeError(errorCode int)(error){
   newError.ErrorCode = errorCode
 
   //remove old errors with same errorcode
-  for i:= range errorHistory{
+  var errorHistorySize = len(errorHistory);
+  for i:= 0; i < errorHistorySize; i++{
     if(errorHistory[i].ErrorCode == errorCode){
       //replace the to-be-removed element with the last element, and remove last element
       errorHistory[i] = errorHistory[len(errorHistory)-1]
       errorHistory = errorHistory[:len(errorHistory)-1]
+      errorHistorySize -= 1;
     }
   }
 
