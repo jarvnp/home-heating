@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-
+const REQUEST_WAIT_DELAY = time.Second*2;
 
 func SetLimit(limit int)error{
   client := http.Client{
@@ -52,7 +52,7 @@ func setSwitch(id uint8, value bool, client http.Client)error{
     return errors.New(string(bodyBytes));
   }
 
-  time.Sleep(time.Second);  // There is a restiction on API use
+  time.Sleep(REQUEST_WAIT_DELAY);  // There is a restiction on API use
   err = resetShellyWatchdogScript(client)
   return err;
 }
@@ -74,7 +74,7 @@ func resetShellyWatchdogScript(client http.Client)error{
     bodyBytes, _ := io.ReadAll(resp.Body)
     return errors.New(string(bodyBytes));
   }
-  time.Sleep(time.Second);  // There is a restiction on API use
+  time.Sleep(REQUEST_WAIT_DELAY);  // There is a restiction on API use
 
   data.Set("method", "Script.Start")
 
@@ -87,6 +87,6 @@ func resetShellyWatchdogScript(client http.Client)error{
     return errors.New(string(bodyBytes));
   }
 
-  time.Sleep(time.Second);  // There is a restiction on API use
+  time.Sleep(REQUEST_WAIT_DELAY);  // There is a restiction on API use
   return nil
 }
