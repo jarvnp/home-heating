@@ -1,16 +1,14 @@
 package shelly
 
-import(
-  "net/http"
-  "strconv"
-  "errors"
-  "home-heating/config"
-  "home-heating/secret"
-  "time"
+import (
+	"errors"
+	"home-heating/config"
+	"home-heating/secret"
+	"net/http"
+	"net/url"
+	"strconv"
+	"time"
 )
-
-
-
 
 
 
@@ -30,14 +28,21 @@ func SetLimit(limit int)error{
 
 
 func setSwitch(id uint8, value bool, client http.Client)error{
-  var request string;
+  data := url.Values{}
+  data.Set("id", secret.SHELLY_ID)
+  data.Set("auth_key", secret.CLOUD_TOKEN)
+  data.Set("method", "Switch.Set")
+  var onString string;
+  var toggleString string = "";
   if value == true{
-    request = secret.SHELLY_ADDRESS+"/rpc/Switch.Set?id="+strconv.Itoa(int(id))+"&on=true&toggle_after="+strconv.Itoa(int(config.SHELLY_SWITCH_MAX_ON_TIME))
+    onString = "true"
+    toggleString = `,"toggle_after":` + strconv.Itoa(int(config.SHELLY_SWITCH_MAX_ON_TIME));
   }else{
-    request = secret.SHELLY_ADDRESS+"/rpc/Switch.Set?id=" +strconv.Itoa(int(id))+"&on=false"
+    onString = "false"
   }
+  data.Set("params", `{"id":` +strconv.Itoa(int(id))+ `, "on": ` + onString + toggleString + `}`)
 
-  resp, err := client.Get(request)
+  resp, err := client.PostForm(secret.CLOUD_SERVER,data)
   if err != nil {
     return err;
   }
@@ -45,6 +50,7 @@ func setSwitch(id uint8, value bool, client http.Client)error{
     return errors.New(resp.Status);
   }
 
+  time.Sleep(time.Second);  // There is a restiction on API use
   err = resetShellyWatchdogScript(client)
   return err;
 }
@@ -52,9 +58,13 @@ func setSwitch(id uint8, value bool, client http.Client)error{
 //stop and start again a watchdog script.
 //the script will send warning email, if it is not reset periodically
 func resetShellyWatchdogScript(client http.Client)error{
-  var request string
-  request = secret.SHELLY_ADDRESS + "/rpc/Script.Stop?id=" + config.SHELLY_WATCHDOG_SCRIPT_ID
-  resp, err := client.Get(request)
+
+  data := url.Values{}
+  data.Set("id", secret.SHELLY_ID)
+  data.Set("auth_key", secret.CLOUD_TOKEN)
+  data.Set("method", "Script.Stop")
+  data.Set("params", `{"id":` +config.SHELLY_WATCHDOG_SCRIPT_ID + `}`)
+  resp, err := client.PostForm(secret.CLOUD_SERVER,data)
   if err != nil {
     return err;
   }
@@ -62,8 +72,9 @@ func resetShellyWatchdogScript(client http.Client)error{
     return errors.New(resp.Status);
   }
 
-  request = secret.SHELLY_ADDRESS + "/rpc/Script.Start?id=" + config.SHELLY_WATCHDOG_SCRIPT_ID
-  resp, err = client.Get(request)
+  data.Set("method", "Script.Start")
+
+  resp, err = client.PostForm(secret.CLOUD_SERVER,data)
   if err != nil {
     return err;
   }
@@ -71,5 +82,6 @@ func resetShellyWatchdogScript(client http.Client)error{
     return errors.New(resp.Status);
   }
 
+  time.Sleep(time.Second);  // There is a restiction on API use
   return nil
 }
