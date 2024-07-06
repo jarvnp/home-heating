@@ -4,6 +4,7 @@ import (
 	"errors"
 	"home-heating/config"
 	"home-heating/secret"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -47,7 +48,8 @@ func setSwitch(id uint8, value bool, client http.Client)error{
     return err;
   }
   if(resp.StatusCode != 200){
-    return errors.New(resp.Status);
+    bodyBytes, _ := io.ReadAll(resp.Body)
+    return errors.New(string(bodyBytes));
   }
 
   time.Sleep(time.Second);  // There is a restiction on API use
@@ -69,8 +71,10 @@ func resetShellyWatchdogScript(client http.Client)error{
     return err;
   }
   if(resp.StatusCode != 200){
-    return errors.New(resp.Status);
+    bodyBytes, _ := io.ReadAll(resp.Body)
+    return errors.New(string(bodyBytes));
   }
+  time.Sleep(time.Second);  // There is a restiction on API use
 
   data.Set("method", "Script.Start")
 
@@ -79,7 +83,8 @@ func resetShellyWatchdogScript(client http.Client)error{
     return err;
   }
   if(resp.StatusCode != 200){
-    return errors.New(resp.Status);
+    bodyBytes, _ := io.ReadAll(resp.Body)
+    return errors.New(string(bodyBytes));
   }
 
   time.Sleep(time.Second);  // There is a restiction on API use
