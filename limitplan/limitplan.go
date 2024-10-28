@@ -1,20 +1,22 @@
 package limitplan
-import(
-  "errors"
-  "fmt"
-  "sort"
-  "time"
-  "net/http"
-  "home-heating/electricityprice"
-  "home-heating/temperature"
-  "home-heating/config"
-  "home-heating/jsonrw"
+
+import (
+	"errors"
+	"fmt"
+	"home-heating/config"
+	"home-heating/electricityprice"
+	"home-heating/jsonrw"
+	"home-heating/temperature"
+	"net/http"
+	"sort"
+	"time"
 )
 
 
 type PlanData struct{
   Time string //format: ddmmyyyyhhmm
   Limit int
+  Price float64 // For debugging
 }
 
 
@@ -311,6 +313,7 @@ func getNewData(plan *[]PlanData, fetchPeriodStartDate time.Time)error{
     var newHour PlanData
     newHour.Limit = limits[i]
     newHour.Time = startTime.Format("020120061504")
+    newHour.Price = prices[i]
     startTime = startTime.Add(time.Hour)
     *plan = append( *plan, newHour)
   }

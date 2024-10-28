@@ -1,12 +1,12 @@
 package email
 
-import(
-  "net/http"
-  "strings"
-  "errors"
-  "io/ioutil"
-  "encoding/json"
-  "home-heating/secret"
+import (
+	"encoding/json"
+	"errors"
+	"home-heating/secret"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 const URL = "https://send.api.mailtrap.io/api/send"
@@ -18,7 +18,7 @@ const URL = "https://send.api.mailtrap.io/api/send"
 
 type Response struct{
   Success bool `json:"success"`
-  Errors []string `json:errors`
+  Errors []string `json:"errors"`
 }
 
 type Recipient struct{
